@@ -15,9 +15,24 @@ class SerialWriter(Node):
     self.subscription  # prevent unused variable warning
 
 
+  def crc8(data):
+    crc = 0xFF
+    for byte in data:
+        crc ^= byte
+        for _ in range(8):
+            if crc & 0x80:
+                crc = (crc << 1) ^ 0x31
+            else:
+                crc <<= 1
+    return crc & 0xFF
+
+
   def listener_callback(self, msg):
     cmd = msg.data
-    self.arduino.write(cmd.encode())
+    byte_cmd = cmd.encode()
+    crc_value = self.crc8(byte_cmd)
+    cmd_with_crc = byte_cmd + crc_value
+    self.arduino.write(byte_cmd)
     # self.get_logger().info(cmd)
 
 

@@ -13,8 +13,8 @@ class CameraDriver(Node):
     self.current_y_deg = 120
     self.current_z_deg = 90
 
-    self.y_PID = PIDCntrlr(0.15, 0.0, 0.0)
-    self.z_PID = PIDCntrlr(0.15, 0.0, 0.0)
+    self.y_PID = PIDCntrlr(0.0, 0.0, 0.0)
+    self.z_PID = PIDCntrlr(0.0, 0.0, 0.0)
 
     self.subscription = self.create_subscription(Twist, 'cmd_vel', self.listener_callback, 10)
     self.subscription  # prevent unused variable warning
@@ -30,6 +30,8 @@ class CameraDriver(Node):
 
   def listener_callback(self, msg):
     if msg.angular.y == 0 and msg.angular.z == 0:
+      self.y_PID(0)
+      self.z_PID(0)
       self.publisher.publish(String(data="d"))
       return
 

@@ -1,6 +1,8 @@
 #include <AFMotor.h>
 #include <Servo.h>
 
+typedef unsigned char uchar;
+
 AF_DCMotor motor_rear_left(1);
 AF_DCMotor motor_rear_right(2);
 AF_DCMotor motor_front_right(3);
@@ -21,22 +23,36 @@ void read_servo_cmd()
   }
 
   int angles[2] = {0, 0};
-  int value_id = 0;
-  while (value_id < 2)
+  int angle_id = 0;
+  uchar crc = 0xFF;
+
+  while (angle_id < 2)
   {
-    if (Serial.available())
+    if (!Serial.available())
+      continue;
+
+    uchar input_byte = Serial.read();
+    crc ^= input_byte;
+    for (int j = 0; j < 8; ++j)
     {
-      char input_byte = Serial.read();
-      Serial.println(input_byte);
-      if (input_byte == '_')
+      if (crc & 0x80)
       {
-        ++value_id;
-        continue;
+        crc = (crc << 1) ^ 0x31;
       }
-      angles[value_id] = angles[value_id] * 10 + int(input_byte) - 48;
-      input_byte = Serial.read();
+      else
+      {
+        crc <<= 1;
+      }
     }
+
+    if (input_byte == '_')
+    {
+      ++angle_id;
+      continue;
+    }
+    angles[angle_id] = angles[angle_id] * 10 + int(input_byte) - 48;
   }
+
   camY.write(angles[0]);
   camZ.write(angles[1]);
   Serial.println(angles[0]);
@@ -61,7 +77,7 @@ void loop()
 {
   if (Serial.available() > 0)
   {
-    char cmd = Serial.read();
+    uchar cmd = Serial.read();
     Serial.println(cmd);
     switch (cmd)
     {

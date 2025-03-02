@@ -20,7 +20,7 @@ class PositionEstimator(Node):
     self.widths = objects_info["widths"]
     self.focal_length = objects_info["focal_length"]
 
-    self.declare_parameter("class_name", "apple")
+    self.declare_parameter("class_name", "cell_phone")
     self.publisher = self.create_publisher(Twist, 'cmd_vel', 10)
 
     self.client = self.create_client(Detection, 'detection')
