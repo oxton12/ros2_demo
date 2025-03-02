@@ -1,0 +1,20 @@
+classes:
+  apple: [47, 32]
+  donut: [54, 29, 61]
+  cell_phone: [67, 65]
+  bottle: [39]
+
+colors:
+  apple: [0, 230, 50]
+  donut: [240, 20, 20]
+  cell_phone: [150, 150, 150]
+  bottle: [255, 200, 200]
+
+widths:
+  apple: 0.07
+  donut: 0.085
+  cell_phone: 0.08
+  bottle: 0.07
+
+focal_length:
+  700
