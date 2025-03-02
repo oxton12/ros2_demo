@@ -55,7 +55,8 @@ class YoloVision(Node):
     ret, img = self.cap.read()
     img = cv2.flip(img, 0)
     img = cv2.remap(img, self.mapx, self.mapy, cv2.INTER_LINEAR)
-    img = img[self.y:self.y+self.h, self.x:self.x+self.w] 
+    img = img[self.y:self.y+self.h, self.x:self.x+self.w]
+    img = cv2.flip(img, 1)
 
     results = self.model.predict(img, device="cuda:0", half=True, verbose=False, classes=self.classes[class_name], max_det=1, conf=0.05)
     out = results[0].boxes

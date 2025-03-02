@@ -16,8 +16,9 @@ class SerialWriter(Node):
 
 
   def crc8(self, data):
+    byte_data = bytearray(data, "utf-8")
     crc = 0xFF
-    for byte in data:
+    for byte in byte_data:
         crc ^= byte
         for _ in range(8):
             if crc & 0x80:
@@ -28,12 +29,14 @@ class SerialWriter(Node):
 
 
   def listener_callback(self, msg):
-    cmd = msg.data
-    byte_cmd = cmd.encode()
-    crc_value = self.crc8(byte_cmd)
-    cmd_with_crc = byte_cmd + bytes([crc_value])
-    self.arduino.write(cmd_with_crc)
-    # self.get_logger().info(cmd)
+    cmd = str(msg.data)
+    byte_cmd = bytearray(cmd, "utf-8")
+    if(len(cmd) > 1):
+      crc_value = self.crc8(cmd[1:])
+      byte_cmd.append(crc_value)
+    self.arduino.write(byte_cmd)
+    #self.arduino.write(crc_value)
+    #self.get_logger().info(cmd)
 
 
 def main(args=None):

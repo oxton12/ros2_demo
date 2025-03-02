@@ -55,7 +55,7 @@ class PositionEstimator(Node):
     distance = object_width * self.focal_length / w
     angular_y = math.atan((object_width / w * y) / distance)
     angular_z = math.atan((object_width / w * x) / distance)
-    speed = distance - 0.2
+    speed = distance - 0.3
 
     msg = Twist(linear=Vector3(x=speed, y=0.0, z=0.0), angular=Vector3(x=0.0, y=angular_y, z=angular_z))
     return msg

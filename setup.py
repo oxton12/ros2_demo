@@ -22,6 +22,7 @@ setup(
         'console_scripts': ['position_estimator = ros2_demo.nodes.position_estimator:main',
                             'yolo_vision = ros2_demo.nodes.yolo_vision:main',
                             'camera_driver = ros2_demo.nodes.camera_driver:main',
+                            'motors_driver = ros2_demo.nodes.motors_driver:main',
                             'serial_writer = ros2_demo.nodes.serial_writer:main'
         ],
     },

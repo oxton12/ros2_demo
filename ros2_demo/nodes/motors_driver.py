@@ -5,22 +5,19 @@ from geometry_msgs.msg import Twist
 from std_msgs.msg import String
 
 
-class CameraDriver(Node):
+class MotorsDriver(Node):
 
   def __init__(self):
-    super().__init__('camera_driver')
+    super().__init__('motors_driver')
 
-    self.current_y_deg = 120
-    self.current_z_deg = 90
-
-    self.y_PID = PIDCntrlr(0.12, 0.0, 0.0)
-    self.z_PID = PIDCntrlr(0.12, 0.0, 0.0)
+    self.forward_PID = PIDCntrlr(650, 300, 300)
+    self.turn_PID = PIDCntrlr(700, 200, 500)
 
     self.subscription = self.create_subscription(Twist, 'cmd_vel', self.listener_callback, 10)
     self.subscription  # prevent unused variable warning
 
     self.publisher = self.create_publisher(String, 'cmd_actr', 10)
-    msg = ("s%d_%d_" % (self.current_y_deg, self.current_z_deg))
+    msg = ("s120_90_")
     time.sleep(2)
     self.publisher.publish(String(data=msg))
     time.sleep(0.3)
@@ -29,34 +26,37 @@ class CameraDriver(Node):
 
 
   def listener_callback(self, msg):
-    if msg.angular.y == 0 and msg.angular.z == 0:
-      self.y_PID(0)
-      self.z_PID(0)
-      self.publisher.publish(String(data="d"))
-      return
+    forward_cmd = msg.linear.x
+    turn_cmd = msg.angular.z
 
-    y_deg = msg.angular.y / 3.1415 * 180
-    z_deg = -1 * (msg.angular.z / 3.1415 * 180)
+    forward_speed = self.forward_PID(forward_cmd)
+    turning_speed = self.turn_PID(turn_cmd)
 
-    new_y_deg = self.y_PID(y_deg) + self.current_y_deg
-    new_z_deg = self.z_PID(z_deg) + self.current_z_deg
+    left_speed = forward_speed + turning_speed
+    right_speed = forward_speed - turning_speed
 
-    new_y_deg = max(0, min(180, new_y_deg))
-    new_z_deg = max(0, min(180, new_z_deg))
+    if left_speed >= 0 and right_speed >= 0:
+      direction_code = 0
+    elif left_speed >= 0 and right_speed < 0:
+      direction_code = 1
+    elif left_speed < 0 and right_speed < 0:
+      direction_code = 2
+    else:
+      direction_code = 3
 
-    self.current_y_deg = new_y_deg
-    self.current_z_deg = new_z_deg
+    left_speed = min(abs(left_speed), 100)
+    right_speed = min(abs(right_speed), 100)
 
-    command = ("s%d_%d_" % (new_y_deg, new_z_deg))
+    command = ("m%d%d_%d_" % (direction_code, left_speed, right_speed))
     self.publisher.publish(String(data=command))
 
 
 
 def main(args=None):
   rclpy.init(args=args)
-  camera_driver = CameraDriver()
-  rclpy.spin(camera_driver)
-  camera_driver.destroy_node()
+  motors_driver = MotorsDriver()
+  rclpy.spin(motors_driver)
+  motors_driver.destroy_node()
   rclpy.shutdown()
 
 
@@ -80,8 +80,13 @@ class PIDCntrlr:
       self.prev_value = value
       return 0
     
-    if(self.prev_value * value < 0 or value == 0):
+    if(self.prev_value * value < 0):
       self.accumulation = 0
+
+    if(value == 0):
+      self.accumulation = 0
+      self.prev_time = time.time()
+      return 0
 
     current_time = time.time()
     
@@ -93,5 +98,4 @@ class PIDCntrlr:
     self.prev_time = current_time
     self.prev_value = value
 
-    # output = min(2, max(-2, output))
     return int(output)
