@@ -32,7 +32,7 @@ class SerialWriter(Node):
     byte_cmd = cmd.encode()
     crc_value = self.crc8(byte_cmd)
     cmd_with_crc = byte_cmd + bytes([crc_value])
-    self.arduino.write(byte_cmd)
+    self.arduino.write(cmd_with_crc)
     # self.get_logger().info(cmd)
 
 

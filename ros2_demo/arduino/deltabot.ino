@@ -53,6 +53,14 @@ void read_servo_cmd()
     angles[angle_id] = angles[angle_id] * 10 + int(input_byte) - 48;
   }
 
+  while (!Serial.available())
+  {
+    continue;
+  }
+  uchar check_sum = Serial.read();
+  if (check_sum != crc)
+    return;
+
   camY.write(angles[0]);
   camZ.write(angles[1]);
   Serial.println(angles[0]);
