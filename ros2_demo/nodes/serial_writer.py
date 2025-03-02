@@ -15,7 +15,7 @@ class SerialWriter(Node):
     self.subscription  # prevent unused variable warning
 
 
-  def crc8(data):
+  def crc8(self, data):
     crc = 0xFF
     for byte in data:
         crc ^= byte
